@@ -1,0 +1,12 @@
+// make new list: ctrl + enter
+// done: alt + d
+// started: alt + s
+// done: alt + d
+// cancel: alt + c
+
+Todo:
+  ☐ make feature @started(21-05-05 14:59)
+
+// archive ctrl + shit + a
+Archive:
+  ✔ sample todo @started(21-05-06 10:43) @done(21-05-06 10:43) @lasted(33s) @project(Todo)
