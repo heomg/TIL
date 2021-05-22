@@ -318,7 +318,7 @@ git push -u origin main
     ```css
     * {
       /* default: content-box */ 
-      box-sizing: border-box;
+      box-sizing: border-box;     /* content + border + padding */
     }
     ```
   - [flex](https://heropy.blog/2018/11/24/css-flexible-box/)
@@ -730,3 +730,191 @@ Number(null)    // 0
 Number({x:1, y:2})  // NaN
 Number([1, 2, 3])   // NaN
 ```
+---
+---
+# 05-22-2021
+## Vue
+  - [Slots](https://kr.vuejs.org/v2/guide/components-slots.html)
+    - Named Slots
+      - 이름이 있는 슬롯에 내용을 전달하려면 \<template>에 v-slot 디렉티브를 쓰고 그 속성에 앞에서 지정한 'name'을 넣으면 됨
+      - name이 지정되지 않은 \<slot>에는 암묵적으로 default 값이 사용됨 
+    ```html
+    <!-- 자식 컴포넌트 -->
+    <div class="container">
+      <header>
+        <slot name="header"></slot>
+      </header>
+      <main>
+        <slot></slot>
+      </main>
+      <footer>
+        <slot name="footer"></slot>
+      </footer>
+    </div>
+    ```
+    ```html
+    <!-- 부모 컴포넌트 -->
+    <base-layout>
+      <!-- slotPorps는 원하는 대로 바꿀 수 있음 -->
+      <template v-slot:header> 
+        <h1>Here might be a page title</h1>
+      </template>
+      
+      <!-- 명시적으로 default 표시도 가능
+      <template v-slot:default> 
+      -->
+      <p>A paragraph for the main content.</p>
+      <p>And another one.</p>
+      <!-- </template> -->
+
+      <template v-slot:footer>
+        <p>Here's some contact info<p>
+      </template>
+    </base-layout>
+    ```
+    - 축약형
+    ```html
+    <!-- 축약 전 -->
+    <!-- template이 하나 밖에 없으므로 축약 가능 -->
+    <current-user>
+      <template v-slot:default>
+      </template>
+    </current-user>
+
+    <!-- 축약 후 -->
+    <current-user v-slot:default>
+    </current-user>
+    ```
+    - 슬롯 속성
+    ```html
+    <!-- 자식 컴포넌트 -->
+    <slot v-bind:user="user"></slot>
+
+    <!-- 부모 컴포넌트 -->
+    <current-user v-slot="slotProps">
+      {{ slotProps.user.firstName }}
+    </current-user>
+    ```
+    - 구조 분해 가능
+      - 프레임워크 내부에서 범위가 있는 슬롯은 하나의 인수(슬롯 속성)를 가지는 함수로 슬롯에 들어가는 내용을 감싸는 방식으로 작동 
+    ```javascript
+    function(slotProps) {
+      // ...slot content...
+    }
+    ```
+    ```html
+    <current-user v-slot="{ user : person = { firstName: 'Guest' } }">
+      {{ person.firstName }}
+    </current-user>
+    ```
+    - 다른 사례들
+      - 부모 컴포넌트를 레이아웃 용도로만 사용하고 데이터 로직을 캡슐화
+    ```html
+    <!-- 자식 컴포넌트 -->
+    <ul>
+      <li
+        v-for="todo in filteredTodos"
+        v-bind:key="todo.id"
+      >
+        <slot name="todo" v-bind:todo="todo">
+          <!-- 기본값 -->
+          {{ todo.text }}
+        </slot>
+      </li>
+    </ul>
+
+    <!-- 부모 컴포넌트 -->
+    <todo-list>
+      <template #todo="{ todo }">
+        <span v-if="todo.isComplete">Complete-</span>
+        {{ todo.text }}
+      </template>
+    </todo-list>
+
+    ```
+    
+
+## javascript
+  - [this](https://ko.javascript.info/js)
+    - 화살표 함수가 아닐 때
+      - 함수를 호출할 때 암묵적으로 this가 넘어감
+      - this는 함수를 호출한 객체를 가리킴
+      - 함수를 호출한 객체가 없을 때는 실행 환경에 따라 window나 undefined 
+      - 어디서 정의되었는지는 아무 상관 없음
+    - 화살표 함수일 때
+      - 화살표 함수엔 단지 this가 없을 뿐
+      - 일반 변수 서칭과 마찬가지로 this의 값을 외부 렉시컬 환경에서 찾음
+    ```javascript
+    function f1() { console.log(this) }
+    let a = { aF1: f1, aF2: function() { console.log(this)} };
+    let f2 = aF2;
+
+    f1()        // window 또는 undefined
+    a.aF1()     // a 객체
+    f2()        // window 또는 undefined
+    a.aF2()     // a 객체
+    ```
+    ```javascript
+    let group1 = {
+      title: "1모둠",
+      students: ["보라", "호진", "지민"],
+
+      showList() {
+        this.students.forEach(
+          student => console.log(this.title + ': ' + student)
+        )
+      }
+    }
+
+    group1.showList();
+
+
+    let group2 = {
+      title: "2모둠",
+      students: ["보라", "호진", "지민"],
+
+      showList() {
+        this.students.forEach(function(student) {
+          // TypeError: Cannot read property 'title' of undefined
+          console.log(this.title + ': ' + student);
+        });
+      }
+    };
+
+    group2.showList();
+    ```
+    ```javascript
+    let a = {
+      aFunc: function(callback) {
+        callback();
+      }
+    };
+
+    let b = {
+      bFunc: () => console.log(this),
+    }
+
+    let c = {
+      cFunc: function() { console.log(this) },
+    }
+
+    a.aFunc(b.bFunc);   // window 또는 undefined
+    a.aFunc(c.cFunc);   // window 또는 undefined
+    ```
+    ```javascript
+    let a = {
+      aFunc() { 
+        let arrowFunc = () => console.log(this);
+        arrowFunc();
+        console.log(this);
+      }
+    }
+    let b = {
+      bFunc: a.aFunc
+    }
+
+    let c = a.aFunc;
+
+    b.bFunc();    // b 객체, b 객체
+    c()           // window 또는 undefined, window 또는 undefined
+    ```
